@@ -41,7 +41,7 @@ func timePerc(nextPost time.Time) (perc float64) { //calculate percentage
 	return
 }
 
-func printBar(perc float64) (bar string) {
+func printBar(perc float64) (bar string) { //print progress bar by percentage
 	const fullB string = "\u2588"          //0.9
 	const halfB string = "\u2584"          //0.5
 	const quarterB string = "\u2582"       //0.25
@@ -54,7 +54,7 @@ func printBar(perc float64) (bar string) {
 		bar += fullB
 	}
 
-	gB := perc*ttlBs - math.Floor(perc*ttlBs)
+	gB := perc*ttlBs - math.Floor(perc*ttlBs) //to decide which gab block to chose.
 	log.Info("the gap block indicator is:", gB)
 	if gB < 0.0001 && perc < 0.9999 {
 		bar += emptyB
@@ -70,7 +70,6 @@ func printBar(perc float64) (bar string) {
 	} else {
 		bar += fullB
 	}
-	///
 	eBs := int(ttlBs) - fBs - 1
 	for i := 0; i < eBs; i++ {
 		bar += emptyB
@@ -87,7 +86,7 @@ func printBar(perc float64) (bar string) {
 	return
 }
 
-func postToRum(content string, group string, url string) {
+func postToRum(content string, group string, url string) { //to generate quorum http post
 	type Object struct {
 		Type    string `json:"type"`
 		Content string `json:"content"`
@@ -150,7 +149,7 @@ func postToRum(content string, group string, url string) {
 	fmt.Println(string(received))
 }
 
-func readConfig(jsonFile string) *Configs {
+func readConfig(jsonFile string) *Configs { // to read config file
 	rawData, _ := ioutil.ReadFile(jsonFile) // filename is the JSON file to read
 	//fmt.Println(string(rawData))
 
@@ -162,24 +161,24 @@ func readConfig(jsonFile string) *Configs {
 }
 
 func main() {
-	f, err := os.OpenFile("YP.log", os.O_WRONLY|os.O_CREATE, 0755)
+	f, err := os.OpenFile("YP.log", os.O_WRONLY|os.O_CREATE, 0755) //log file
 	if err != nil {
 		panic(err)
 	}
 	log.SetOutput(f)
-	configs := readConfig("config.json")
+	configs := readConfig("config.json") //default config file
 
 	flagConfig := flag.String("config", "config.json", "config file")
 	flagGroupID := flag.String("gid", "test", "group ID, default ID is for testing")
 	flagTest := flag.Bool("test", false, "test mode")
 	flag.Parse()
 	configs = readConfig(*flagConfig)
-	if *flagTest {
+	if *flagTest { //test quorum network by adding flag "-test".
 		postToRum(printBar(timePerc(time.Now().UTC())), *flagGroupID, configs.URL)
 	}
 
-	c := cron.New(cron.WithLocation(time.UTC))
-	for true {
+	c := cron.New(cron.WithLocation(time.UTC)) //new cron with location
+	for {                                      // the infinate loop, designed to run whole 2022
 		startTime := time.Date(2022, time.Now().UTC().Month(), time.Now().UTC().Day(), time.Now().UTC().Hour(), time.Now().Minute(), 0, 0, time.UTC)
 		log.Info("---\nstartTime:", startTime)
 		for x := 0; x <= 14; x++ {
@@ -191,7 +190,7 @@ func main() {
 			log.Info("roundPerc:", roundPerc)
 			differVal := roundPerc - realTimePerc
 			log.Info("differVal:", differVal)
-			if differVal < 0.00001 {
+			if differVal < 0.00001 { // calculating every one minute, so the difference between rounded percentage(1%) and realtime percentage is less than 0.00001.
 				realTime := startTime.Add(addMinutes)
 				log.Info("differVal less than 0:", differVal)
 				nextPostTime := fmt.Sprintf("%d %d %d %d *", realTime.Minute(), realTime.Hour(), realTime.Day(), realTime.Month())
@@ -205,7 +204,7 @@ func main() {
 				c.Start()
 				log.Info("######## went to sleep for 85 hours ########")
 				fmt.Println("######## went to sleep for 85 hours ########")
-				time.Sleep(85 * time.Hour)
+				time.Sleep(85 * time.Hour) // sleep for 85 hours
 				break
 			}
 		}
