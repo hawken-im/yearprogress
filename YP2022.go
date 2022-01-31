@@ -12,7 +12,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/robfig/cron/v3"
+	cron "github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -196,14 +196,11 @@ func main() {
 				log.Info("differVal less than 0:", differVal)
 				nextPostTime := fmt.Sprintf("%d %d %d %d *", realTime.Minute(), realTime.Hour(), realTime.Day(), realTime.Month())
 				log.Info("nextPostTime:", nextPostTime)
-				// next plan: add a for loop to post to all groups that are not test groups and are "percent mode" groups
 				for _, groupID := range configs.Groups {
 					if !groupID.TestGroup {
 						c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), groupID.ID, configs.URL) })
 						log.Info("posting to group ID:", groupID.ID)
 					}
-					//	c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), "80eba456-fdf4-4f8c-be76-bde2066cff6b", configs.URL) }) //test On Aus
-					//	c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), "3bb7a3be-d145-44af-94cf-e64b992ff8f0", configs.URL) }) //DTwitter
 				}
 				c.Start()
 				log.Info("######## went to sleep for 85 hours ########")
