@@ -1,0 +1,222 @@
+package main
+
+import (
+	"bytes"
+	"crypto/tls"
+	"encoding/json"
+	"flag"
+	"fmt"
+	"io/ioutil"
+	"math"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/robfig/cron/v3"
+	log "github.com/sirupsen/logrus"
+)
+
+type Cron struct {
+	Method   string `json:"method"`
+	Schedule string `json:"schedule"`
+}
+type Group struct {
+	Name      string `json:"name"`
+	ID        string `json:"ID"`
+	TestGroup bool   `json:"testGroup"`
+	Cron      Cron   `json:"cron"`
+	TimeZone  string `json:"timeZone"`
+}
+type Configs struct {
+	URL    string  `json:"url"`
+	Groups []Group `json:"groups"`
+}
+
+func timePerc(nextPost time.Time) (perc float64) { //calculate percentage
+	initialTime := time.Date(2022, time.January, 1, 0, 0, 0, 0, time.UTC)
+	duration := nextPost.Sub(initialTime)
+	log.Info("duration is:", duration)
+	perc = duration.Hours() / (365.0 * 24.0)
+	log.Info("perc is:", perc)
+	return
+}
+
+func printBar(perc float64) (bar string) {
+	const fullB string = "\u2588"          //0.9
+	const halfB string = "\u2584"          //0.5
+	const quarterB string = "\u2582"       //0.25
+	const threeQuartersB string = "\u2586" //0.75
+	const emptyB string = "\u2581"         //0
+	const ttlBs float64 = 30               //total number of blocks
+	bar = ""
+	fBs := int(math.Floor(perc * ttlBs))
+	for i := 0; i < fBs; i++ {
+		bar += fullB
+	}
+
+	gB := perc*ttlBs - math.Floor(perc*ttlBs)
+	log.Info("the gap block indicator is:", gB)
+	if gB < 0.0001 && perc < 0.9999 {
+		bar += emptyB
+	} else if gB >= 0.0001 && gB < 0.35 {
+		bar += quarterB
+	} else if gB >= 0.35 && gB < 0.6 {
+		bar += halfB
+	} else if gB >= 0.6 && gB < 0.85 {
+		bar += threeQuartersB
+	} else if perc >= 0.9999 {
+		log.Info("quit earlier to prevent an extra empty block ", perc*ttlBs)
+		return
+	} else {
+		bar += fullB
+	}
+	///
+	eBs := int(ttlBs) - fBs - 1
+	for i := 0; i < eBs; i++ {
+		bar += emptyB
+	}
+
+	content := ""
+	content += "2022 进度条 / Year Progress 2022\n"
+
+	content += bar
+
+	now := time.Now().UTC()
+	displayPerC := fmt.Sprintf("%.1f", perc*100) + "%"
+	bar = content + displayPerC + "\nUTC时间: " + now.Format("2006, Jan 02, 15:04:05") + "\n"
+	return
+}
+
+func postToRum(content string, group string, url string) {
+	type Object struct {
+		Type    string `json:"type"`
+		Content string `json:"content"`
+		Name    string `json:"name"`
+	}
+	type Target struct {
+		ID   string `json:"id"`
+		Type string `json:"type"`
+	}
+	type Payload struct {
+		Type   string `json:"type"`
+		Object Object `json:"object"`
+		Target Target `json:"target"`
+	}
+
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+	client := &http.Client{Transport: tr}
+
+	data := Payload{
+		Type: "Add",
+		Object: Object{
+			Type:    "Note",
+			Content: content,
+			Name:    "2022 进度条 / Year Progress 2022",
+		},
+		Target: Target{
+			ID:   group,
+			Type: "Group",
+		},
+	}
+
+	payloadBytes, err := json.Marshal(data)
+	if err != nil {
+		panic(err) // handle err
+	}
+
+	fmt.Println(string(payloadBytes))
+
+	body := bytes.NewReader(payloadBytes)
+
+	req, err := http.NewRequest("POST", url, body)
+	if err != nil {
+		panic(err)
+	}
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := client.Do(req)
+	if err != nil {
+		panic(err)
+	}
+
+	defer resp.Body.Close()
+
+	received, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(string(received))
+}
+
+func readConfig(jsonFile string) *Configs {
+	rawData, _ := ioutil.ReadFile(jsonFile) // filename is the JSON file to read
+	//fmt.Println(string(rawData))
+
+	var configs Configs
+	json.Unmarshal(rawData, &configs)
+	//	data = groups.Groups[1].ID
+	json.Unmarshal(rawData, &configs)
+	return &configs
+}
+
+func main() {
+	f, err := os.OpenFile("YP.log", os.O_WRONLY|os.O_CREATE, 0755)
+	if err != nil {
+		panic(err)
+	}
+	log.SetOutput(f)
+	configs := readConfig("config.json")
+
+	flagConfig := flag.String("config", "config.json", "config file")
+	flagGroupID := flag.String("gid", "test", "group ID, default ID is for testing")
+	flagTest := flag.Bool("test", false, "test mode")
+	flag.Parse()
+	configs = readConfig(*flagConfig)
+	if *flagTest {
+		postToRum(printBar(timePerc(time.Now().UTC())), *flagGroupID, configs.URL)
+	}
+
+	c := cron.New(cron.WithLocation(time.UTC))
+	for true {
+		startTime := time.Date(2022, time.Now().UTC().Month(), time.Now().UTC().Day(), time.Now().UTC().Hour(), time.Now().Minute(), 0, 0, time.UTC)
+		log.Info("---\nstartTime:", startTime)
+		for x := 0; x <= 14; x++ {
+			addMinutes, _ := time.ParseDuration(fmt.Sprintf("%dm", x))
+			log.Info("addMinutes:", addMinutes)
+			realTimePerc := timePerc(startTime.Add(addMinutes))
+			log.Info("realTimePerc:", realTimePerc)
+			roundPerc := math.Ceil(realTimePerc*100) / 100
+			log.Info("roundPerc:", roundPerc)
+			differVal := roundPerc - realTimePerc
+			log.Info("differVal:", differVal)
+			if differVal < 0.00001 {
+				realTime := startTime.Add(addMinutes)
+				log.Info("differVal less than 0:", differVal)
+				nextPostTime := fmt.Sprintf("%d %d %d %d *", realTime.Minute(), realTime.Hour(), realTime.Day(), realTime.Month())
+				log.Info("nextPostTime:", nextPostTime)
+				// next plan: add a for loop to post to all groups that are not test groups and are "percent mode" groups
+				for _, groupID := range configs.Groups {
+					if !groupID.TestGroup {
+						c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), groupID.ID, configs.URL) })
+						log.Info("posting to group ID:", groupID.ID)
+					}
+					//	c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), "80eba456-fdf4-4f8c-be76-bde2066cff6b", configs.URL) }) //test On Aus
+					//	c.AddFunc(nextPostTime, func() { postToRum(printBar(roundPerc), "3bb7a3be-d145-44af-94cf-e64b992ff8f0", configs.URL) }) //DTwitter
+				}
+				c.Start()
+				log.Info("######## went to sleep for 85 hours ########")
+				fmt.Println("######## went to sleep for 85 hours ########")
+				time.Sleep(85 * time.Hour)
+				break
+			}
+		}
+		log.Info("######## went to sleep ########")
+		fmt.Println("######## went to sleep ########")
+		time.Sleep(15 * time.Minute)
+		c.Stop()
+		log.Info("############ awaken ###########")
+		fmt.Println("############ awaken ###########")
+	}
+}
