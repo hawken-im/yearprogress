@@ -12,25 +12,12 @@ import (
 	"os"
 	"time"
 
+	readconfig "github.com/hawken-im/yearprogress/readconfig"
+
 	cron "github.com/robfig/cron/v3"
+
 	log "github.com/sirupsen/logrus"
 )
-
-type Cron struct {
-	Method   string `json:"method"`
-	Schedule string `json:"schedule"`
-}
-type Group struct {
-	Name      string `json:"name"`
-	ID        string `json:"ID"`
-	TestGroup bool   `json:"testGroup"`
-	Cron      Cron   `json:"cron"`
-	TimeZone  string `json:"timeZone"`
-}
-type Configs struct {
-	URL    string  `json:"url"`
-	Groups []Group `json:"groups"`
-}
 
 func timePerc(nextPost time.Time) (perc float64) { //calculate percentage
 	initialTime := time.Date(2022, time.January, 1, 0, 0, 0, 0, time.UTC)
@@ -149,30 +136,19 @@ func postToRum(content string, group string, url string) { //to generate quorum 
 	fmt.Println(string(received))
 }
 
-func readConfig(jsonFile string) *Configs { // to read config file
-	rawData, _ := ioutil.ReadFile(jsonFile) // filename is the JSON file to read
-	//fmt.Println(string(rawData))
-
-	var configs Configs
-	json.Unmarshal(rawData, &configs)
-	//	data = groups.Groups[1].ID
-	json.Unmarshal(rawData, &configs)
-	return &configs
-}
-
 func main() {
 	f, err := os.OpenFile("YP.log", os.O_WRONLY|os.O_CREATE, 0755) //log file
 	if err != nil {
 		panic(err)
 	}
 	log.SetOutput(f)
-	configs := readConfig("config.json") //default config file
+	configs := readconfig.ReadConfig("config.json") //default config file
 
 	flagConfig := flag.String("config", "config.json", "config file")
 	flagGroupID := flag.String("gid", "test", "group ID, default ID is for testing")
 	flagTest := flag.Bool("test", false, "test mode")
 	flag.Parse()
-	configs = readConfig(*flagConfig)
+	configs = readconfig.ReadConfig(*flagConfig)
 	if *flagTest { //test quorum network by adding flag "-test".
 		postToRum(printBar(timePerc(time.Now().UTC())), *flagGroupID, configs.URL)
 	}
