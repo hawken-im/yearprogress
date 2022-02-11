@@ -134,6 +134,7 @@ func postToRum(content string, group string, url string) { //to generate quorum 
 		panic(err)
 	}
 	fmt.Println(string(received))
+	log.Info(string(received))
 }
 
 func main() {
