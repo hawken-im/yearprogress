@@ -73,6 +73,6 @@ func postToRum(title string, content string, group string, url string) { //to ge
 }
 
 func main() {
-	url := "https://149.28.186.40:8002/api/v1/group/content"
+	url := "https://127.0.0.1:8002/api/v1/group/content"
 	postToRum("Hello Rum", "Hello Rum", "80eba456-fdf4-4f8c-be76-bde2066cff6b", url)
 }
