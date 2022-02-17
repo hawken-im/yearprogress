@@ -15,7 +15,7 @@
 ](https://xue.cn/hub/app/books/236)
 就是用 Go 语言写吃豆人游戏。好，从这本书开始入门 Go。
 并不是因为作者是美丽的女程序员我才选择的这本书。
-![[img/author_danicat.png]]
+![](img/author_danicat.png)
 
 >**并不是**
 
@@ -71,7 +71,7 @@ req, err := http.NewRequest("POST", "https://127.0.0.1:[Rum节点的端口号]/a
 变量 req 就是我们要发送请求的一个实例了。通过 http.NewRequest 来建立，有三个参数，分别是：
 "POST"，表示我们的请求是 POST 方法；
 第二个参数是 URL，端口号可以在 Rum 客户端的“节点与网络”菜单中的“节点参数”中找到；
-![[img/portnumber.png]]
+![](img/portnumber.png)
 
 第三个 body 变量是要 Post 给 Rum 的具体内容。
 
@@ -164,7 +164,7 @@ func main() {
 目标种子网络的 ID 可以在种子网络的详情处获取到，比如“Go语言学习小组”的 ID 是
 >fe2842cb-db6b-4e8a-b007-e83e5603131c
 
-![[img/groupID.png]]
+![](img/groupID.png)
 
 我们填入 ID 就可以往“Go语言学习小组”发送 Hello Rum 了。
 以上代码的片段忽略掉了一些 Go 语言的一些前置语句，比如包管理的 package 语句，比如引入依赖的包的 import 语句。这里我把代码完整的提供到了 github 仓库里。本系列文章的第一步骤放在了 Step0 文件夹里（因为我们程序员要习惯从零开始）：
