@@ -35,7 +35,7 @@ func postToRum(title string, content string, group string, url string) { //to ge
 		Object: Object{
 			Type:    "Note",
 			Content: content,
-			Name:    title,
+			Name:    "hello",
 		},
 		Target: Target{
 			ID:   group,
@@ -73,6 +73,6 @@ func postToRum(title string, content string, group string, url string) { //to ge
 }
 
 func main() {
-	url := "https://127.0.0.1:8002/api/v1/group/content"
-	postToRum("Hello Rum", "Hello Rum", "80eba456-fdf4-4f8c-be76-bde2066cff6b", url)
+	url := "https://127.0.0.1:8002/api/v1/group/content"                             //Rum 定义的 api
+	postToRum("Hello Rum", "Hello Rum", "fe2842cb-db6b-4e8a-b007-e83e5603131c", url) //发布 Hello Rum 到Go语言学习小组
 }
