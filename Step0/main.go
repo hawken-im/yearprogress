@@ -35,7 +35,7 @@ func postToRum(title string, content string, group string, url string) { //to ge
 		Object: Object{
 			Type:    "Note",
 			Content: content,
-			Name:    "hello",
+			Name:    title,
 		},
 		Target: Target{
 			ID:   group,
