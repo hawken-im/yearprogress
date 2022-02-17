@@ -15,6 +15,7 @@
 ](https://xue.cn/hub/app/books/236)
 就是用 Go 语言写吃豆人游戏。好，从这本书开始入门 Go。
 并不是因为作者是美丽的女程序员我才选择的这本书。
+
 ![](img/author_danicat.png)
 
 >**并不是**
