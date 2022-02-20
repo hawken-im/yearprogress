@@ -10,7 +10,7 @@
 ## 生成进度条
 上一篇我们写了函数，可以用 HTTP Post 方法向 Rum 发送内容，我们这一篇就来发送焦虑内容之年度进度条吧。
 进度条采用文本形式，我在 Unicode 的列表里找到了一些方块：
-!()[img/blocks.png]
+![](img/blocks.png)
 
 >这个找 Unicode 的地方我提供给读者：https://unicode-table.com/
 
