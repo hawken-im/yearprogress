@@ -125,3 +125,7 @@ func main() {
 接下来把内容传递给上一篇写的函数，postToRum，礼成！
 
 按照惯例，我把代码的全貌展示在 github 上，因为跟我一样小白的读者如果通过复制粘贴再加上自己的修修补补可能没法成功运行：
+
+https://github.com/hawken-im/yearprogress/tree/main/Step1
+
+另外，最终实现自己的目标前，会出不少问题，要定位这些问题，最好的方法就是每一步都输出一个结果。这里我用了 fmt.Println()。
