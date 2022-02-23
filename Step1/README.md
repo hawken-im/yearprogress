@@ -82,8 +82,6 @@ func timePerc(nextPost time.Time) (perc float64) { //calculate percentage
 	duration := nextPost.Sub(initialTime)
 	log.Info("duration is:", duration)
 	perc = duration.Hours() / (365.0 * 24.0)
-	log.Info("perc is:", perc)
-
 	return
 }
 ```

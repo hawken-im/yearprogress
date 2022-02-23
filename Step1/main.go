@@ -15,7 +15,6 @@ func timePerc(nextPost time.Time) (perc float64) { //calculate percentage
 	initialTime := time.Date(2022, time.January, 1, 0, 0, 0, 0, time.UTC)
 	duration := nextPost.Sub(initialTime)
 	perc = duration.Hours() / (365.0 * 24.0)
-	fmt.Println("perc is:", perc)
 	return
 }
 
