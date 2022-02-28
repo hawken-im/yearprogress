@@ -1,0 +1,25 @@
+{
+"url":"https://127.0.0.1/api/v1/group/content",
+"groups":[
+    {
+        "name":"YearProgress 2022",
+        "ID":"[quorum seednet ID]",
+        "testGroup":false,
+        "cron":{
+            "method":"daily",
+            "schedule":"0 0 * * *"
+        },
+        "timeZone":"UTC"
+    },
+    {
+        "name":"Test Group On Aus",
+        "ID":"[quorum seednet ID]",
+        "testGroup":true,
+        "cron":{
+            "method":"percently",
+            "schedule":"default"
+        },
+        "timeZone":"UTC"
+    }
+]
+}

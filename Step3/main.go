@@ -4,12 +4,15 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io/ioutil"
 	"math"
 	"net/http"
 	"os"
 	"time"
+
+	"yearprogress/readconfig"
 
 	"github.com/robfig/cron/v3"
 	log "github.com/sirupsen/logrus"
@@ -137,6 +140,15 @@ func main() {
 	}
 	log.SetOutput(f)
 
+	flagConfig := flag.String("config", "config.json", "config file")
+	flagGroupID := flag.String("gid", "fe2842cb-db6b-4e8a-b007-e83e5603131c", "group ID, default ID is for testing")
+	flagTest := flag.Bool("test", false, "test mode")
+	flag.Parse()
+	configs := readconfig.ReadConfig(*flagConfig)
+	if *flagTest { //test quorum network by adding flag "-test".
+		postToRum("测试 2022 进度条", printBar(timePerc(time.Now().UTC())), *flagGroupID, configs.URL)
+	}
+
 	c := cron.New(cron.WithLocation(time.UTC))
 	url := "https://127.0.0.1:8002/api/v1/group/content" //Rum 定义的 api
 
@@ -158,7 +170,13 @@ func main() {
 				nextPostTime := fmt.Sprintf("%d %d %d %d *", realTime.Minute(), realTime.Hour(), realTime.Day(), realTime.Month())
 				log.Info("nextPostTime:", nextPostTime) //报告具体的整百分点发布时间
 				progressBar := printBar(roundPerc)
-				c.AddFunc(nextPostTime, func() { postToRum("2022 进度条", progressBar, "fe2842cb-db6b-4e8a-b007-e83e5603131c", url) }) //设置定时任务
+				for _, groupID := range configs.Groups {
+					if !groupID.TestGroup {
+						c.AddFunc(nextPostTime, func() { postToRum("2022 进度条", progressBar, groupID.ID, url) }) //设置定时任务)
+						log.Info("posting to group ID:", groupID.ID)
+					}
+				}
+
 				c.Start()
 				log.Info("######## went to sleep for 85 hours ########")    //日志里也记录一下                                                                         //开始定时任务
 				fmt.Println("######## went to sleep for 85 hours ########") //休眠85个小时，因为一个百分比大概接近87个小时

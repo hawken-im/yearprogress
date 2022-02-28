@@ -23,8 +23,6 @@ type Configs struct {
 
 func ReadConfig(jsonFile string) *Configs { // to read config file
 	rawData, _ := ioutil.ReadFile(jsonFile) // filename is the JSON file to read
-	//fmt.Println(string(rawData))
-
 	var configs Configs
 	json.Unmarshal(rawData, &configs)
 	return &configs
