@@ -73,6 +73,6 @@ func postToRum(title string, content string, group string, url string) { //to ge
 }
 
 func main() {
-	url := "http://8.210.108.211:62663/api/v1/group/content"                             //Rum 定义的 api
-	postToRum("Hello Rum", "Hello Rum", "3d6b12a9-1234-4dc1-a0d2-30e2658509dd", url) //发布 Hello Rum 到Go语言学习小组
+	url := "https://127.0.0.1:8002/api/v1/group/content"                             //Rum 定义的 api
+	postToRum("Hello Rum", "Hello Rum", "fe2842cb-db6b-4e8a-b007-e83e5603131c", url) //发布 Hello Rum 到Go语言学习小组
 }

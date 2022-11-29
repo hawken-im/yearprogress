@@ -134,14 +134,14 @@ func postToRum(title string, content string, group string, url string) { //to ge
 }
 
 func main() {
-	f, err := os.OpenFile("YPdaily.log", os.O_WRONLY|os.O_CREATE, 0755) //log file
+	f, err := os.OpenFile("YP.log", os.O_WRONLY|os.O_CREATE, 0755) //log file
 	if err != nil {
 		panic(err)
 	}
 	log.SetOutput(f)
 
 	flagConfig := flag.String("config", "config.json", "config file")
-	flagGroupID := flag.String("gid", "3d6b12a9-1234-4dc1-a0d2-30e2658509dd", "group ID, default ID is for testing")
+	flagGroupID := flag.String("gid", "ce3cfd9a-b7e6-4306-8bf1-65ba52fc6bca", "group ID, default ID is for testing")
 	flagTest := flag.Bool("test", false, "test mode")
 	flag.Parse()
 	configs := readconfig.ReadConfig(*flagConfig)
@@ -150,17 +150,45 @@ func main() {
 	}
 
 	c := cron.New(cron.WithLocation(time.UTC))
+	url := "http://127.0.0.1:62663/api/v1/group/content" //Rum 定义的 api
 
-	url := configs.URL
+	for {
+		startTime := time.Date(2022, time.Now().UTC().Month(), time.Now().UTC().Day(), time.Now().UTC().Hour(), time.Now().Minute(), 0, 0, time.UTC) //开始时间
+		log.Info("startTime:", startTime)                                                                                                            //记录一下循环开始时间
+		for x := 0; x <= 14; x++ {                                                                                                                   //循环15次，下一个15分钟每分钟一次
+			addMinutes, _ := time.ParseDuration(fmt.Sprintf("%dm", x)) //每次循环，在开始时间前加x分钟
+			log.Info("addMinutes:", addMinutes)                        //记录一下每次加的时间对不对
+			realTimePerc := timePerc(startTime.Add(addMinutes))
+			log.Info("realTimePerc:", realTimePerc)        //加了时间之后的百分比，记录一下这个增长过程
+			roundPerc := math.Ceil(realTimePerc*100) / 100 //计算下一个整数百分比
+			log.Info("roundPerc:", roundPerc)              //虽然每次都是一样的值，但还是想看看
+			differVal := roundPerc - realTimePerc          //计算差值，差值接近于零代表时间接近整数百分比了
+			log.Info("differVal:", differVal)              //看看差值的变化过程，越来越接近于零
+			if differVal < 0.00001 {                       //每分钟计算一次，每分钟是一年的0.000002，因此精确到小数点后5位
+				realTime := startTime.Add(addMinutes)
+				log.Info("differVal less than 0:", differVal) //终于到整百分点了，记录一个
+				nextPostTime := fmt.Sprintf("%d %d %d %d *", realTime.Minute(), realTime.Hour(), realTime.Day(), realTime.Month())
+				log.Info("nextPostTime:", nextPostTime) //报告具体的整百分点发布时间
+				progressBar := printBar(roundPerc)
+				for _, groupID := range configs.Groups {
+					if !groupID.TestGroup {
+						c.AddFunc(nextPostTime, func() { postToRum("2022 进度条", progressBar, groupID.ID, url) }) //设置定时任务)
+						log.Info("posting to group ID:", groupID.ID)
+					}
+				}
 
-	realTimePerc := timePerc(startTime.Add(addMinutes))
-	progressBar := printBar(roundPerc)
-	for _, groupID := range configs.Groups {
-		if !groupID.TestGroup && groupID.cron.method == "daily" {
-			c.AddFunc(nextPostTime, func() { postToRum("2022 进度条", progressBar, groupID.ID, url) }) //设置定时任务)
-			log.Info("daily posting to group ID:", groupID.ID)
+				c.Start()
+				log.Info("######## went to sleep for 85 hours ########")    //日志里也记录一下                                                                         //开始定时任务
+				fmt.Println("######## went to sleep for 85 hours ########") //休眠85个小时，因为一个百分比大概接近87个小时
+				time.Sleep(85 * time.Hour)
+				break
+			}
 		}
+		log.Info("######## went to sleep ########")
+		fmt.Println("######## went to sleep ########") //休眠15分钟
+		time.Sleep(15 * time.Minute)
+		c.Stop()
+		log.Info("############ awaken ###########")
+		fmt.Println("############ awaken ###########") //唤醒
 	}
-	c.Start()
-	
 }
