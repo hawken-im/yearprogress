@@ -1,9 +1,9 @@
 {
-"url":"http://127.0.0.1:62663/api/v1/group/content",
+"url":"https://127.0.0.1/api/v1/group/content",
 "groups":[
     {
-        "name":"2022 YearProgress",
-        "ID":"99eda8cf-7115-45c2-b7d3-f4b88daa0fc3",
+        "name":"YearProgress 2022",
+        "ID":"[quorum seednet ID]",
         "testGroup":false,
         "cron":{
             "method":"daily",
@@ -12,18 +12,8 @@
         "timeZone":"UTC"
     },
     {
-        "name":"DecentralizedTwitter",
-        "ID":"3bb7a3be-d145-44af-94cf-e64b992ff8f0",
-        "testGroup":false,
-        "cron":{
-            "method":"percently",
-            "schedule":"default"
-        },
-        "timeZone":"UTC"
-    },
-    {
-        "name":"Test",
-        "ID":"3d6b12a9-1234-4dc1-a0d2-30e2658509dd",
+        "name":"Test Group On Aus",
+        "ID":"[quorum seednet ID]",
         "testGroup":true,
         "cron":{
             "method":"percently",
