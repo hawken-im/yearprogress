@@ -141,7 +141,7 @@ func main() {
 	log.SetOutput(f)
 
 	flagConfig := flag.String("config", "config.json", "config file")
-	flagGroupID := flag.String("gid", "fe2842cb-db6b-4e8a-b007-e83e5603131c", "group ID, default ID is for testing")
+	flagGroupID := flag.String("gid", "ce3cfd9a-b7e6-4306-8bf1-65ba52fc6bca", "group ID, default ID is for testing")
 	flagTest := flag.Bool("test", false, "test mode")
 	flag.Parse()
 	configs := readconfig.ReadConfig(*flagConfig)
@@ -150,7 +150,7 @@ func main() {
 	}
 
 	c := cron.New(cron.WithLocation(time.UTC))
-	url := "https://127.0.0.1:8002/api/v1/group/content" //Rum 定义的 api
+	url := "http://127.0.0.1:62663/api/v1/group/content" //Rum 定义的 api
 
 	for {
 		startTime := time.Date(2022, time.Now().UTC().Month(), time.Now().UTC().Day(), time.Now().UTC().Hour(), time.Now().Minute(), 0, 0, time.UTC) //开始时间
